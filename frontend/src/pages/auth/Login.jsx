@@ -25,7 +25,11 @@ const Login = () => {
 
     try {
       const response = await login({ email, password });
-      setToken(response.data.token);
+      const authToken = response?.token || response?.access_token;
+      if (!authToken) {
+        throw new Error(t('login_error'));
+      }
+      setToken(authToken);
       const profile = await getProfile();
       const isComplete = Boolean(
         profile?.native_language_id && profile?.learning_language_id && profile?.interface_language_id
