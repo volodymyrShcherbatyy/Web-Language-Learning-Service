@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import AuthCard from '../../components/AuthCard';
 import { login } from '../../services/api';
+import { getProfile } from '../../services/profileApi';
 import { getToken, setToken } from '../../utils/storage';
 
 const Login = () => {
@@ -23,7 +24,11 @@ const Login = () => {
     try {
       const response = await login({ email, password });
       setToken(response.data.token);
-      navigate('/dashboard', { replace: true });
+      const profile = await getProfile();
+      const isComplete = Boolean(
+        profile?.native_language_id && profile?.learning_language_id && profile?.interface_language_id
+      );
+      navigate(isComplete ? '/dashboard' : '/onboarding', { replace: true });
     } catch (submitError) {
       setError(submitError.message || 'Invalid credentials.');
     } finally {
