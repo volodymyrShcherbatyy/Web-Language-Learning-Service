@@ -1,4 +1,8 @@
+import useLocalization from '../hooks/useLocalization';
+
 const FeedbackBanner = ({ feedback }) => {
+  const { t } = useLocalization();
+
   if (feedback.isCorrect === null) {
     return null;
   }
@@ -9,7 +13,7 @@ const FeedbackBanner = ({ feedback }) => {
 
   return (
     <div className={`w-full rounded-xl border px-4 py-3 text-sm font-semibold ${className}`} role="status" aria-live="polite">
-      {feedback.isCorrect ? 'Correct!' : 'Wrong'}
+      {feedback.isCorrect ? t('correct') : t('wrong')}
     </div>
   );
 };

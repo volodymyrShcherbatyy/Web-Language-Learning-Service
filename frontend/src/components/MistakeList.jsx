@@ -1,11 +1,14 @@
 import { memo } from 'react';
+import useLocalization from '../hooks/useLocalization';
 import MistakeItem from './MistakeItem';
 
 const MistakeList = ({ mistakes }) => {
+  const { t } = useLocalization();
+
   if (!mistakes.length) {
     return (
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-center text-emerald-800">
-        No mistakes this time — perfect lesson!
+        {t('no_mistakes')}
       </div>
     );
   }

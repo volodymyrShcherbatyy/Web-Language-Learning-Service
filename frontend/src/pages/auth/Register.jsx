@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import AuthCard from '../../components/AuthCard';
+import useLocalization from '../../hooks/useLocalization';
 import { register } from '../../services/api';
 import { getProfile } from '../../services/profileApi';
 import { getToken, setToken } from '../../utils/storage';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { t } = useLocalization();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,7 +24,7 @@ const Register = () => {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('password_mismatch'));
       return;
     }
 
@@ -37,7 +39,7 @@ const Register = () => {
       );
       navigate(isComplete ? '/dashboard' : '/onboarding', { replace: true });
     } catch (submitError) {
-      setError(submitError.message || 'Could not register this account.');
+      setError(submitError.message || t('register_error'));
     } finally {
       setIsLoading(false);
     }
@@ -45,11 +47,11 @@ const Register = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-8">
-      <AuthCard title="Create your account">
+      <AuthCard title={t('register_title')}>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="email">
-              Email
+              {t('email')}
             </label>
             <input
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -64,7 +66,7 @@ const Register = () => {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="password">
-              Password
+              {t('password')}
             </label>
             <input
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -79,7 +81,7 @@ const Register = () => {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="confirmPassword">
-              Confirm password
+              {t('confirm_password')}
             </label>
             <input
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -99,14 +101,14 @@ const Register = () => {
             type="submit"
             disabled={isLoading}
           >
-            {isLoading ? 'Creating account...' : 'Register'}
+            {isLoading ? t('creating_account') : t('register')}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{' '}
+          {t('already_have_account')}{' '}
           <Link className="font-semibold text-blue-600 hover:text-blue-700" to="/login">
-            Login
+            {t('login')}
           </Link>
         </p>
       </AuthCard>
