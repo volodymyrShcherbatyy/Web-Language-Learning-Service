@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json());
 
 app.get('/health', (req, res) => {
-  res.json({ success: true, data: { status: 'ok' } });
+  res.json({ status: 'ok' });
 });
 
 app.use('/auth', authRoutes);
@@ -30,4 +30,12 @@ app.use(errorHandler);
 
 app.listen(config.port, () => {
   process.stdout.write(`Server running on port ${config.port}\n`);
+});
+
+process.on('uncaughtException', (err) => {
+  process.stderr.write(`[CRASH] uncaughtException: ${err.stack || err.message}\n`);
+});
+
+process.on('unhandledRejection', (reason) => {
+  process.stderr.write(`[CRASH] unhandledRejection: ${reason instanceof Error ? reason.stack : reason}\n`);
 });

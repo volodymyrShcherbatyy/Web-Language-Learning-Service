@@ -1,6 +1,9 @@
 const { error } = require('../utils/response');
 
 const errorHandler = (err, req, res, next) => {
+  const path = req?.originalUrl || req?.url || 'unknown';
+  process.stderr.write(`[API_ERROR] ${req?.method || 'UNKNOWN'} ${path} - ${err?.stack || err?.message || err}\n`);
+
   if (err && err.code === '23505') {
     return error(res, 'Resource already exists', 409);
   }

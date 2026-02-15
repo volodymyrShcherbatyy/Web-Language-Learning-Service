@@ -9,7 +9,10 @@
     "dev": "node --watch app.js",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "jest --config jest.config.js",
-    "test:frontend": "npm --prefix frontend test"
+    "test:frontend": "npm --prefix frontend test",
+    "build:frontend": "npm --prefix frontend run build",
+    "migrate:prod": "psql \"postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:${DB_PORT:-5432}/$DB_NAME\" -f sql/schema.sql && psql \"postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:${DB_PORT:-5432}/$DB_NAME\" -f migrations/001_learning_system.sql",
+    "start:pm2": "pm2 start deploy/pm2/ecosystem.config.cjs"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
