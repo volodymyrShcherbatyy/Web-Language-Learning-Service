@@ -1,0 +1,18 @@
+{
+  "name": "web-language-learning-service",
+  "version": "1.0.0",
+  "description": "Language learning backend with learning system layer",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "check": "node --check src/server.js && node --check src/routes/learning.js && node --check src/services/learningEngine.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0"
+  }
+}
