@@ -1,14 +1,15 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
-import Onboarding from './pages/profile/Onboarding';
-import ProfileSettings from './pages/profile/ProfileSettings';
+import GlobalErrorBanner from './components/GlobalErrorBanner';
+import AdminSidebar from './components/AdminSidebar';
+import useLocalization from './hooks/useLocalization';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Lesson from './pages/Lesson';
 import LessonSummary from './pages/LessonSummary';
-import AdminSidebar from './components/AdminSidebar';
+import Onboarding from './pages/profile/Onboarding';
+import ProfileSettings from './pages/profile/ProfileSettings';
 import { getProfile } from './services/profileApi';
-import useLocalization from './hooks/useLocalization';
 import { getToken, getUserRole, removeToken } from './utils/storage';
 
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -25,10 +26,7 @@ const Dashboard = () => {
         <h1 className="text-2xl font-bold text-gray-900">{t('dashboard')}</h1>
         <p className="mt-2 text-gray-600">{t('dashboard_subtitle')}</p>
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          <Link
-            to="/lesson"
-            className="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white transition hover:bg-indigo-700"
-          >
+          <Link to="/lesson" className="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white transition hover:bg-indigo-700">
             {t('start_lesson')}
           </Link>
           <Link
@@ -38,10 +36,7 @@ const Dashboard = () => {
             {t('edit_profile_settings')}
           </Link>
           {getUserRole() === 'admin' ? (
-            <Link
-              to="/admin"
-              className="rounded-lg bg-purple-600 px-5 py-2 font-semibold text-white transition hover:bg-purple-700"
-            >
+            <Link to="/admin" className="rounded-lg bg-purple-600 px-5 py-2 font-semibold text-white transition hover:bg-purple-700">
               Admin Panel
             </Link>
           ) : null}
@@ -61,43 +56,19 @@ const Dashboard = () => {
   );
 };
 
-const ProtectedRoute = ({ children }) => {
-  if (!getToken()) {
-    return <Navigate to="/login" replace />;
-  }
+const ProtectedRoute = ({ children }) => (getToken() ? children : <Navigate to="/login" replace />);
 
-  return children;
-};
-
-const AdminRoute = ({ children }) => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (getUserRole() !== 'admin') {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [navigate]);
-
-  if (getUserRole() !== 'admin') {
-    return null;
-  }
-
-  return children;
-};
+const AdminRoute = ({ children }) => (getUserRole() === 'admin' ? children : <Navigate to="/dashboard" replace />);
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
-
-  const handleForbidden = () => {
-    navigate('/dashboard', { replace: true });
-  };
 
   return (
     <div className="min-h-screen bg-gray-100 md:flex">
       <AdminSidebar />
       <main className="flex-1 p-4 md:p-8">
         <Suspense fallback={<div className="text-gray-600">Loading admin module...</div>}>
-          {children(handleForbidden)}
+          {children(() => navigate('/dashboard', { replace: true }))}
         </Suspense>
       </main>
     </div>
@@ -162,102 +133,123 @@ const ProfileCompletionRoute = ({ requiresComplete, children }) => {
   return children;
 };
 
-const App = () => (
-  <Routes>
-    <Route path="/" element={<Navigate to="/login" replace />} />
-    <Route path="/login" element={<Login />} />
-    <Route path="/register" element={<Register />} />
-    <Route
-      path="/onboarding"
-      element={
-        <ProtectedRoute>
-          <ProfileCompletionRoute requiresComplete={false}>
-            <Onboarding />
-          </ProfileCompletionRoute>
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/dashboard"
-      element={
-        <ProtectedRoute>
-          <ProfileCompletionRoute requiresComplete>
-            <Dashboard />
-          </ProfileCompletionRoute>
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/lesson"
-      element={
-        <ProtectedRoute>
-          <ProfileCompletionRoute requiresComplete>
-            <Lesson />
-          </ProfileCompletionRoute>
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/lesson/summary"
-      element={
-        <ProtectedRoute>
-          <ProfileCompletionRoute requiresComplete>
-            <LessonSummary />
-          </ProfileCompletionRoute>
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/profile/settings"
-      element={
-        <ProtectedRoute>
-          <ProfileSettings />
-        </ProtectedRoute>
-      }
-    />
+const App = () => {
+  const [globalError, setGlobalError] = useState(null);
 
-    <Route
-      path="/admin"
-      element={
-        <ProtectedRoute>
-          <AdminRoute>
-            <AdminLayout>{(onForbidden) => <AdminDashboard onForbidden={onForbidden} />}</AdminLayout>
-          </AdminRoute>
-        </ProtectedRoute>
+  useEffect(() => {
+    const onApiError = (event) => {
+      const incomingError = event?.detail;
+      if (!incomingError || incomingError.code === 'UNAUTHORIZED') {
+        return;
       }
-    />
-    <Route
-      path="/admin/concepts"
-      element={
-        <ProtectedRoute>
-          <AdminRoute>
-            <AdminLayout>{(onForbidden) => <ConceptsList onForbidden={onForbidden} />}</AdminLayout>
-          </AdminRoute>
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/admin/concepts/:id"
-      element={
-        <ProtectedRoute>
-          <AdminRoute>
-            <AdminLayout>{(onForbidden) => <ConceptEditor onForbidden={onForbidden} />}</AdminLayout>
-          </AdminRoute>
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/admin/media"
-      element={
-        <ProtectedRoute>
-          <AdminRoute>
-            <AdminLayout>{(onForbidden) => <MediaManager onForbidden={onForbidden} />}</AdminLayout>
-          </AdminRoute>
-        </ProtectedRoute>
-      }
-    />
-    <Route path="*" element={<Navigate to="/login" replace />} />
-  </Routes>
-);
+
+      setGlobalError({ message: incomingError.message, code: incomingError.code });
+    };
+
+    window.addEventListener('api:error', onApiError);
+    return () => window.removeEventListener('api:error', onApiError);
+  }, []);
+
+  return (
+    <>
+      <GlobalErrorBanner error={globalError} onClose={() => setGlobalError(null)} />
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute>
+              <ProfileCompletionRoute requiresComplete={false}>
+                <Onboarding />
+              </ProfileCompletionRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <ProfileCompletionRoute requiresComplete>
+                <Dashboard />
+              </ProfileCompletionRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lesson"
+          element={
+            <ProtectedRoute>
+              <ProfileCompletionRoute requiresComplete>
+                <Lesson />
+              </ProfileCompletionRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lesson/summary"
+          element={
+            <ProtectedRoute>
+              <ProfileCompletionRoute requiresComplete>
+                <LessonSummary />
+              </ProfileCompletionRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/profile" element={<Navigate to="/profile/settings" replace />} />
+        <Route
+          path="/profile/settings"
+          element={
+            <ProtectedRoute>
+              <ProfileSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <AdminLayout>{(onForbidden) => <AdminDashboard onForbidden={onForbidden} />}</AdminLayout>
+              </AdminRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/concepts"
+          element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <AdminLayout>{(onForbidden) => <ConceptsList onForbidden={onForbidden} />}</AdminLayout>
+              </AdminRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/concepts/:id"
+          element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <AdminLayout>{(onForbidden) => <ConceptEditor onForbidden={onForbidden} />}</AdminLayout>
+              </AdminRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/media"
+          element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <AdminLayout>{(onForbidden) => <MediaManager onForbidden={onForbidden} />}</AdminLayout>
+              </AdminRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </>
+  );
+};
 
 export default App;

@@ -1,75 +1,32 @@
-import { getToken, removeToken } from '../utils/storage';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-
-const getAuthHeaders = () => {
-  const token = getToken();
-
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-};
-
-const normalizePayload = (payload) => {
-  if (!payload || typeof payload !== 'object') {
-    return payload;
-  }
-
-  if (payload.data && typeof payload.data === 'object') {
-    return payload.data;
-  }
-
-  return payload;
-};
-
-const handleResponse = async (response) => {
-  const payload = await response.json().catch(() => ({}));
-
-  if (response.status === 401) {
-    removeToken();
-    throw new Error('Session expired. Please log in again.');
-  }
-
-  if (!response.ok) {
-    throw new Error(payload.message || 'Failed to process lesson request.');
-  }
-
-  return normalizePayload(payload);
-};
+import { apiRequest, clearApiCache } from './apiClient';
 
 export const startLessonSession = async () => {
-  const response = await fetch(`${API_BASE_URL}/lesson/start`, {
+  clearApiCache('/lesson/next');
+  return apiRequest('/lesson/start', {
     method: 'POST',
-    headers: getAuthHeaders(),
+    cache: false,
   });
-
-  return handleResponse(response);
 };
 
 export const getNextExercise = async () => {
-  const response = await fetch(`${API_BASE_URL}/lesson/next`, {
-    method: 'GET',
-    headers: getAuthHeaders(),
-  });
+  try {
+    return await apiRequest('/lesson/next', { cache: false });
+  } catch (error) {
+    if (error.status === 404) {
+      return null;
+    }
 
-  if (response.status === 404 || response.status === 204) {
-    return null;
+    throw error;
   }
-
-  return handleResponse(response);
 };
 
-export const submitLessonAnswer = async ({ session_id, exercise_id, answer_id }) => {
-  const response = await fetch(`${API_BASE_URL}/lesson/answer`, {
+export const submitLessonAnswer = ({ session_id, exercise_id, answer_id }) =>
+  apiRequest('/lesson/answer', {
     method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({
+    body: {
       session_id,
       exercise_id,
       answer_id,
-    }),
+    },
+    cache: false,
   });
-
-  return handleResponse(response);
-};

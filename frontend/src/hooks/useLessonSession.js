@@ -105,7 +105,9 @@ export const useLessonSession = () => {
       const firstExercise = await getNextExercise();
 
       if (!firstExercise) {
-        throw new Error('No exercises available for this lesson right now.');
+        setExercise(null);
+        setIsCompleted(true);
+        return;
       }
 
       setExercise(normalizeExercise(firstExercise, nextTotal));
@@ -119,7 +121,7 @@ export const useLessonSession = () => {
   }, []);
 
   const submitAnswer = useCallback(async () => {
-    if (!sessionId || !exercise?.exercise_id || !selectedAnswerId || isSubmittingAnswer) {
+    if (!sessionId || !exercise?.exercise_id || selectedAnswerId === null || isSubmittingAnswer) {
       return;
     }
 
