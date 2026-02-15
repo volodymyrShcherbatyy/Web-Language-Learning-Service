@@ -1,14 +1,20 @@
-import { useEffect, useState } from 'react';
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Suspense, lazy, useEffect, useState } from 'react';
+import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import Onboarding from './pages/profile/Onboarding';
 import ProfileSettings from './pages/profile/ProfileSettings';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Lesson from './pages/Lesson';
 import LessonSummary from './pages/LessonSummary';
+import AdminSidebar from './components/AdminSidebar';
 import { getProfile } from './services/profileApi';
 import useLocalization from './hooks/useLocalization';
-import { getToken, removeToken } from './utils/storage';
+import { getToken, getUserRole, removeToken } from './utils/storage';
+
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const ConceptsList = lazy(() => import('./pages/admin/ConceptsList'));
+const ConceptEditor = lazy(() => import('./pages/admin/ConceptEditor'));
+const MediaManager = lazy(() => import('./pages/admin/MediaManager'));
 
 const Dashboard = () => {
   const { t } = useLocalization();
@@ -31,6 +37,14 @@ const Dashboard = () => {
           >
             {t('edit_profile_settings')}
           </Link>
+          {getUserRole() === 'admin' ? (
+            <Link
+              to="/admin"
+              className="rounded-lg bg-purple-600 px-5 py-2 font-semibold text-white transition hover:bg-purple-700"
+            >
+              Admin Panel
+            </Link>
+          ) : null}
           <button
             type="button"
             className="rounded-lg bg-gray-800 px-5 py-2 font-semibold text-white transition hover:bg-gray-900"
@@ -53,6 +67,41 @@ const ProtectedRoute = ({ children }) => {
   }
 
   return children;
+};
+
+const AdminRoute = ({ children }) => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (getUserRole() !== 'admin') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
+  if (getUserRole() !== 'admin') {
+    return null;
+  }
+
+  return children;
+};
+
+const AdminLayout = ({ children }) => {
+  const navigate = useNavigate();
+
+  const handleForbidden = () => {
+    navigate('/dashboard', { replace: true });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 md:flex">
+      <AdminSidebar />
+      <main className="flex-1 p-4 md:p-8">
+        <Suspense fallback={<div className="text-gray-600">Loading admin module...</div>}>
+          {children(handleForbidden)}
+        </Suspense>
+      </main>
+    </div>
+  );
 };
 
 const ProfileCompletionRoute = ({ requiresComplete, children }) => {
@@ -163,6 +212,47 @@ const App = () => (
       element={
         <ProtectedRoute>
           <ProfileSettings />
+        </ProtectedRoute>
+      }
+    />
+
+    <Route
+      path="/admin"
+      element={
+        <ProtectedRoute>
+          <AdminRoute>
+            <AdminLayout>{(onForbidden) => <AdminDashboard onForbidden={onForbidden} />}</AdminLayout>
+          </AdminRoute>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/concepts"
+      element={
+        <ProtectedRoute>
+          <AdminRoute>
+            <AdminLayout>{(onForbidden) => <ConceptsList onForbidden={onForbidden} />}</AdminLayout>
+          </AdminRoute>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/concepts/:id"
+      element={
+        <ProtectedRoute>
+          <AdminRoute>
+            <AdminLayout>{(onForbidden) => <ConceptEditor onForbidden={onForbidden} />}</AdminLayout>
+          </AdminRoute>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin/media"
+      element={
+        <ProtectedRoute>
+          <AdminRoute>
+            <AdminLayout>{(onForbidden) => <MediaManager onForbidden={onForbidden} />}</AdminLayout>
+          </AdminRoute>
         </ProtectedRoute>
       }
     />
