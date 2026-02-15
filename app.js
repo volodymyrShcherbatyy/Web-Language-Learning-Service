@@ -7,6 +7,7 @@ const profileRoutes = require('./routes/profileRoutes');
 const conceptRoutes = require('./routes/conceptRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const localizationRoutes = require('./routes/localizationRoutes');
+const languageRoutes = require('./routes/languageRoutes');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/profile', profileRoutes);
 app.use('/concepts', conceptRoutes);
 app.use('/admin', adminRoutes);
 app.use('/localization', localizationRoutes);
+app.use('/languages', languageRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, error: 'Not found' });
