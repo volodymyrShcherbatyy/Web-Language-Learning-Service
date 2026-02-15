@@ -40,11 +40,13 @@ const login = async (req, res, next) => {
 
     const user = await userModel.getUserByEmail(email);
     if (!user || !user.is_active) {
+      process.stderr.write(`[AUTH_FAILURE] Invalid login for ${email || 'unknown-email'} from ${req.ip}\n`);
       return error(res, 'Invalid credentials', 401);
     }
 
     const matches = await comparePassword(password, user.password_hash);
     if (!matches) {
+      process.stderr.write(`[AUTH_FAILURE] Invalid login for ${email || 'unknown-email'} from ${req.ip}\n`);
       return error(res, 'Invalid credentials', 401);
     }
 
