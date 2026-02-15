@@ -1,0 +1,19 @@
+{
+  "name": "web-language-learning-service",
+  "version": "1.0.0",
+  "description": "Language Learning Platform backend learning system layer",
+  "main": "src/app.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node src/app.js",
+    "check": "node --check src/app.js && node --check src/controllers/lessonController.js && node --check src/routes/lessonRoutes.js && node --check src/services/exerciseEngineService.js && node --check src/services/learningFlowService.js && node --check src/services/sessionBuilderService.js && node --check src/services/progressUpdaterService.js && node --check src/services/lessonService.js && node --check src/config/db.js && node --check src/middleware/auth.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0"
+  }
+}
