@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import useLocalization from '../hooks/useLocalization';
 import { getLanguages } from '../services/profileApi';
 
 let languagesCache = null;
@@ -30,6 +31,7 @@ const LanguageSelector = ({
   disabled = false,
   excludeIds = [],
 }) => {
+  const { t } = useLocalization();
   const [languages, setLanguages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -49,7 +51,7 @@ const LanguageSelector = ({
         }
       } catch (apiError) {
         if (isMounted) {
-          setLoadError(apiError.message || 'Could not load languages.');
+          setLoadError(apiError.message || t('load_languages_error'));
         }
       } finally {
         if (isMounted) {
@@ -63,7 +65,7 @@ const LanguageSelector = ({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [t]);
 
   const visibleLanguages = useMemo(
     () => languages.filter((language) => !excludeIds.includes(language.id)),
@@ -83,14 +85,14 @@ const LanguageSelector = ({
         disabled={disabled || isLoading || Boolean(loadError)}
         required={required}
       >
-        <option value="">Select a language</option>
+        <option value="">{t('select_language')}</option>
         {visibleLanguages.map((language) => (
           <option key={language.id} value={language.id}>
             {language.name}
           </option>
         ))}
       </select>
-      {isLoading && <p className="mt-1 text-xs text-gray-500">Loading languages...</p>}
+      {isLoading && <p className="mt-1 text-xs text-gray-500">{t('loading_languages')}</p>}
       {loadError && <p className="mt-1 text-sm text-red-600">{loadError}</p>}
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>

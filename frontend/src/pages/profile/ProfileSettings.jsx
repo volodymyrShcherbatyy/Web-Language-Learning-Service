@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import LanguageSelector from '../../components/LanguageSelector';
+import useLocalization from '../../hooks/useLocalization';
 import { getLanguages, getProfile, updateProfileLanguages } from '../../services/profileApi';
 import { getToken } from '../../utils/storage';
 
 const ProfileSettings = () => {
+  const { t, setLanguage } = useLocalization();
   const [nativeLanguageId, setNativeLanguageId] = useState('');
   const [learningLanguageId, setLearningLanguageId] = useState('');
   const [interfaceLanguageId, setInterfaceLanguageId] = useState('');
-  const [languageMap, setLanguageMap] = useState({});
+  const [languageMetaMap, setLanguageMetaMap] = useState({});
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
   const [globalError, setGlobalError] = useState('');
@@ -28,19 +30,26 @@ const ProfileSettings = () => {
           return;
         }
 
-        setNativeLanguageId(profile?.native_language_id || '');
-        setLearningLanguageId(profile?.learning_language_id || '');
-        setInterfaceLanguageId(profile?.interface_language_id || profile?.native_language_id || '');
+        const nativeId = profile?.native_language_id || profile?.native_language?.id || '';
+        const learningId = profile?.learning_language_id || profile?.learning_language?.id || '';
+        const interfaceId = profile?.interface_language_id || profile?.interface_language?.id || nativeId || '';
+
+        setNativeLanguageId(nativeId);
+        setLearningLanguageId(learningId);
+        setInterfaceLanguageId(interfaceId);
 
         const lookup = (Array.isArray(languages) ? languages : []).reduce((acc, language) => {
-          acc[language.id] = language.name;
+          acc[language.id] = {
+            name: language.name,
+            code: (language.code || '').toLowerCase(),
+          };
           return acc;
         }, {});
 
-        setLanguageMap(lookup);
+        setLanguageMetaMap(lookup);
       } catch (apiError) {
         if (mounted) {
-          setGlobalError(apiError.message || 'Unable to load your profile settings.');
+          setGlobalError(apiError.message || t('profile_settings_load_error'));
         }
       } finally {
         if (mounted) {
@@ -54,37 +63,37 @@ const ProfileSettings = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [t]);
 
   if (!getToken()) {
     return <Navigate to="/login" replace />;
   }
 
-  const validateLanguageId = (id) => !id || Boolean(languageMap[id]);
+  const validateLanguageId = (id) => !id || Boolean(languageMetaMap[id]);
 
   const validate = () => {
     const nextErrors = {};
 
     if (!nativeLanguageId) {
-      nextErrors.nativeLanguageId = 'Native language is required.';
+      nextErrors.nativeLanguageId = t('native_language_required');
     } else if (!validateLanguageId(nativeLanguageId)) {
-      nextErrors.nativeLanguageId = 'Selected native language is invalid.';
+      nextErrors.nativeLanguageId = t('native_language_invalid');
     }
 
     if (!learningLanguageId) {
-      nextErrors.learningLanguageId = 'Learning language is required.';
+      nextErrors.learningLanguageId = t('learning_language_required');
     } else if (!validateLanguageId(learningLanguageId)) {
-      nextErrors.learningLanguageId = 'Selected learning language is invalid.';
+      nextErrors.learningLanguageId = t('learning_language_invalid');
     }
 
     if (nativeLanguageId && learningLanguageId && nativeLanguageId === learningLanguageId) {
-      nextErrors.learningLanguageId = 'Native and learning languages must be different.';
+      nextErrors.learningLanguageId = t('languages_must_differ');
     }
 
     if (!interfaceLanguageId) {
-      nextErrors.interfaceLanguageId = 'Interface language is required.';
+      nextErrors.interfaceLanguageId = t('interface_language_required');
     } else if (!validateLanguageId(interfaceLanguageId)) {
-      nextErrors.interfaceLanguageId = 'Selected interface language is invalid.';
+      nextErrors.interfaceLanguageId = t('interface_language_invalid');
     }
 
     setErrors(nextErrors);
@@ -108,28 +117,34 @@ const ProfileSettings = () => {
         learning_language_id: learningLanguageId,
         interface_language_id: interfaceLanguageId,
       });
-      setMessage('Profile settings updated successfully.');
+
+      const nextLanguageCode = languageMetaMap[interfaceLanguageId]?.code;
+      if (nextLanguageCode) {
+        await setLanguage(nextLanguageCode);
+      }
+
+      setMessage(t('profile_settings_saved'));
     } catch (apiError) {
-      setGlobalError(apiError.message || 'Could not save profile settings.');
+      setGlobalError(apiError.message || t('profile_settings_save_error'));
     } finally {
       setIsSaving(false);
     }
   };
 
   const currentLanguagePair = useMemo(() => {
-    const nativeName = languageMap[nativeLanguageId] || '-';
-    const learningName = languageMap[learningLanguageId] || '-';
-    const interfaceName = languageMap[interfaceLanguageId] || '-';
+    const nativeName = languageMetaMap[nativeLanguageId]?.name || '-';
+    const learningName = languageMetaMap[learningLanguageId]?.name || '-';
+    const interfaceName = languageMetaMap[interfaceLanguageId]?.name || '-';
 
     return { nativeName, learningName, interfaceName };
-  }, [interfaceLanguageId, languageMap, learningLanguageId, nativeLanguageId]);
+  }, [interfaceLanguageId, languageMetaMap, learningLanguageId, nativeLanguageId]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-8">
       <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-xl">
-        <h1 className="text-2xl font-bold text-gray-900">Profile language settings</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('profile_language_settings')}</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Current setup: {currentLanguagePair.nativeName} → {currentLanguagePair.learningName} (Interface:{' '}
+          {t('current_setup')}: {currentLanguagePair.nativeName} → {currentLanguagePair.learningName} ({t('interface')}:{' '}
           {currentLanguagePair.interfaceName})
         </p>
 
@@ -139,7 +154,7 @@ const ProfileSettings = () => {
         <form className="mt-6 space-y-4" onSubmit={handleSave}>
           <LanguageSelector
             id="settingsNativeLanguage"
-            label="Native language"
+            label={t('native_language')}
             value={nativeLanguageId}
             onChange={(value) => {
               setNativeLanguageId(value);
@@ -152,7 +167,7 @@ const ProfileSettings = () => {
 
           <LanguageSelector
             id="settingsLearningLanguage"
-            label="Learning language"
+            label={t('learning_language')}
             value={learningLanguageId}
             onChange={(value) => {
               setLearningLanguageId(value);
@@ -165,7 +180,7 @@ const ProfileSettings = () => {
 
           <LanguageSelector
             id="settingsInterfaceLanguage"
-            label="Interface language"
+            label={t('interface_language')}
             value={interfaceLanguageId}
             onChange={(value) => {
               setInterfaceLanguageId(value);
@@ -181,7 +196,7 @@ const ProfileSettings = () => {
             className="w-full rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
             disabled={isLoading || isSaving}
           >
-            {isSaving ? 'Saving changes...' : 'Save changes'}
+            {isSaving ? t('saving_changes') : t('save_changes')}
           </button>
         </form>
       </div>

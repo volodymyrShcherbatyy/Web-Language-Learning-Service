@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
+import useLocalization from '../hooks/useLocalization';
 
 const AccuracyCircle = ({ accuracy = 0 }) => {
+  const { t } = useLocalization();
   const normalizedAccuracy = Math.max(0, Math.min(100, Number(accuracy) || 0));
   const radius = 58;
   const circumference = 2 * Math.PI * radius;
@@ -20,7 +22,7 @@ const AccuracyCircle = ({ accuracy = 0 }) => {
 
   return (
     <div className="relative flex h-40 w-40 items-center justify-center">
-      <svg className="h-40 w-40 -rotate-90" viewBox="0 0 140 140" role="img" aria-label="Lesson accuracy">
+      <svg className="h-40 w-40 -rotate-90" viewBox="0 0 140 140" role="img" aria-label={t('lesson_accuracy')}>
         <circle cx="70" cy="70" r={radius} stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-200" />
         <circle
           cx="70"
@@ -37,7 +39,7 @@ const AccuracyCircle = ({ accuracy = 0 }) => {
       </svg>
       <div className="absolute text-center">
         <div className={`text-3xl font-bold ${colorClass}`}>{normalizedAccuracy}%</div>
-        <div className="text-xs font-medium uppercase tracking-wide text-gray-500">Accuracy</div>
+        <div className="text-xs font-medium uppercase tracking-wide text-gray-500">{t('accuracy')}</div>
       </div>
     </div>
   );

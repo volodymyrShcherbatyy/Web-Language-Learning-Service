@@ -3,6 +3,7 @@ import AccuracyCircle from '../components/AccuracyCircle';
 import ActionButtons from '../components/ActionButtons';
 import MistakeList from '../components/MistakeList';
 import SummaryCard from '../components/SummaryCard';
+import useLocalization from '../hooks/useLocalization';
 import { getLessonSummary } from '../services/summaryApi';
 
 const EMPTY_SUMMARY = {
@@ -14,6 +15,7 @@ const EMPTY_SUMMARY = {
 };
 
 const LessonSummary = () => {
+  const { t } = useLocalization();
   const [summary, setSummary] = useState(EMPTY_SUMMARY);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
@@ -51,7 +53,7 @@ const LessonSummary = () => {
         }
 
         setStatus('error');
-        setError(requestError.message || 'Unable to load lesson summary right now.');
+        setError(requestError.message || t('summary_load_error'));
       }
     };
 
@@ -60,38 +62,38 @@ const LessonSummary = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [t]);
 
   const cards = useMemo(
     () => [
       {
-        label: 'Correct Answers',
+        label: t('correct_answers'),
         value: summary.correct_answers,
         icon: '✅',
         tone: 'emerald',
       },
       {
-        label: 'Wrong Answers',
+        label: t('wrong_answers'),
         value: summary.wrong_answers,
         icon: '❌',
         tone: 'rose',
       },
       {
-        label: 'Words Learned',
+        label: t('words_learned'),
         value: summary.learned_words,
         icon: '📚',
         tone: 'indigo',
       },
     ],
-    [summary.correct_answers, summary.learned_words, summary.wrong_answers]
+    [summary.correct_answers, summary.learned_words, summary.wrong_answers, t]
   );
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-white px-4 py-8">
       <section className="mx-auto w-full max-w-4xl rounded-3xl bg-white p-5 shadow-xl sm:p-8">
         <header className="text-center">
-          <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Lesson Complete 🎉</h1>
-          <p className="mt-2 text-base text-gray-600">Great job! Here is your progress.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">{t('lesson_complete')}</h1>
+          <p className="mt-2 text-base text-gray-600">{t('lesson_complete_subtitle')}</p>
         </header>
 
         {status === 'loading' ? (
@@ -102,24 +104,17 @@ const LessonSummary = () => {
                 <div key={index} className="h-28 animate-pulse rounded-2xl bg-gray-200" />
               ))}
             </div>
-            <div className="space-y-3">
-              {Array.from({ length: 2 }).map((_, index) => (
-                <div key={index} className="h-24 animate-pulse rounded-xl bg-gray-200" />
-              ))}
-            </div>
           </div>
         ) : null}
 
         {status === 'error' ? (
           <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
-            {error || 'Could not load summary. Please try again.'}
+            {error || t('summary_load_error')}
           </div>
         ) : null}
 
         {status === 'empty' ? (
-          <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-            No session data found for your latest lesson.
-          </div>
+          <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">{t('summary_empty')}</div>
         ) : null}
 
         {status === 'ready' ? (
@@ -135,7 +130,7 @@ const LessonSummary = () => {
             </div>
 
             <section>
-              <h2 className="mb-3 text-lg font-bold text-gray-900">Mistakes Review</h2>
+              <h2 className="mb-3 text-lg font-bold text-gray-900">{t('mistakes_review')}</h2>
               <MistakeList mistakes={summary.mistakes} />
             </section>
 

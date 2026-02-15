@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import ExerciseCard from '../components/ExerciseCard';
 import FeedbackBanner from '../components/FeedbackBanner';
 import ProgressBar from '../components/ProgressBar';
+import useLocalization from '../hooks/useLocalization';
 import { useLessonSession } from '../hooks/useLessonSession';
 
 const Lesson = () => {
   const navigate = useNavigate();
+  const { t } = useLocalization();
   const {
     exercise,
     progress,
@@ -43,7 +45,7 @@ const Lesson = () => {
               className="mt-2 rounded-lg border border-red-400 px-3 py-1 text-xs font-semibold transition hover:bg-red-200"
               onClick={retryStartSession}
             >
-              Retry session
+              {t('retry_session')}
             </button>
           </div>
         ) : null}
@@ -79,7 +81,7 @@ const Lesson = () => {
               disabled={!selectedAnswerId || isSubmittingAnswer || isLoadingExercise}
               className="rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
             >
-              {isSubmittingAnswer ? 'Submitting...' : 'Check answer'}
+              {isSubmittingAnswer ? t('submitting') : t('check_answer')}
             </button>
           ) : (
             <button
@@ -88,7 +90,7 @@ const Lesson = () => {
               disabled={isLoadingExercise}
               className="rounded-xl bg-gray-900 px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-400"
             >
-              Next
+              {t('next')}
             </button>
           )}
         </div>
