@@ -1,18 +1,15 @@
 {
   "name": "web-language-learning-service",
   "version": "1.0.0",
-  "description": "Language Learning Platform backend learning system layer",
-  "main": "src/app.js",
+  "description": "Web language learning service backend",
+  "main": "app.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "node src/app.js",
-    "check": "node --check src/app.js && node --check src/controllers/lessonController.js && node --check src/routes/lessonRoutes.js && node --check src/services/exerciseEngineService.js && node --check src/services/learningFlowService.js && node --check src/services/sessionBuilderService.js && node --check src/services/progressUpdaterService.js && node --check src/services/lessonService.js && node --check src/config/db.js && node --check src/middleware/auth.js"
-  "description": "Backend MVP for web language learning service",
-  "main": "app.js",
-  "scripts": {
     "start": "node app.js",
-    "dev": "node --watch app.js"
+    "dev": "node --watch app.js",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "jest --config jest.config.js",
+    "test:frontend": "npm --prefix frontend test"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -20,5 +17,9 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   }
 }

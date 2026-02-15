@@ -1,0 +1,60 @@
+{
+  "info": {
+    "name": "Web Language Learning Service API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Core API regression coverage for auth, profile, lesson flow, summary, localization, and admin endpoints."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "sessionId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth/Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/auth/register",
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"qa+new@example.com\",\n  \"password\": \"StrongPass1!\"\n}" }
+      }
+    },
+    {
+      "name": "Auth/Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/auth/login",
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"qa+new@example.com\",\n  \"password\": \"StrongPass1!\"\n}" }
+      }
+    },
+    {
+      "name": "Profile/Get",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/profile"
+      }
+    },
+    {
+      "name": "Lesson/Start",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/api/lesson/start",
+        "body": { "mode": "raw", "raw": "{\n  \"total_exercises\": 10,\n  \"max_new_words\": 4\n}" }
+      }
+    },
+    {
+      "name": "Lesson/Summary",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/lesson/summary?session_id={{sessionId}}"
+      }
+    }
+  ]
+}
