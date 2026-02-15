@@ -4,6 +4,8 @@ import Onboarding from './pages/profile/Onboarding';
 import ProfileSettings from './pages/profile/ProfileSettings';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import Lesson from './pages/Lesson';
+import LessonSummary from './pages/LessonSummary';
 import { getProfile } from './services/profileApi';
 import { getToken, removeToken } from './utils/storage';
 
@@ -13,6 +15,12 @@ const Dashboard = () => (
       <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
       <p className="mt-2 text-gray-600">You are ready to continue your learning journey.</p>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <Link
+          to="/lesson"
+          className="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white transition hover:bg-indigo-700"
+        >
+          Start lesson
+        </Link>
         <Link
           to="/profile/settings"
           className="rounded-lg border border-gray-300 px-5 py-2 font-semibold text-gray-800 transition hover:bg-gray-50"
@@ -120,6 +128,26 @@ const App = () => (
         <ProtectedRoute>
           <ProfileCompletionRoute requiresComplete>
             <Dashboard />
+          </ProfileCompletionRoute>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/lesson"
+      element={
+        <ProtectedRoute>
+          <ProfileCompletionRoute requiresComplete>
+            <Lesson />
+          </ProfileCompletionRoute>
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/lesson/summary"
+      element={
+        <ProtectedRoute>
+          <ProfileCompletionRoute requiresComplete>
+            <LessonSummary />
           </ProfileCompletionRoute>
         </ProtectedRoute>
       }
