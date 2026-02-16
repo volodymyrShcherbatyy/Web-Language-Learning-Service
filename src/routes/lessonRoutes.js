@@ -4,9 +4,9 @@ const lessonController = require('../controllers/lessonController');
 
 const router = express.Router();
 
-router.post('/lesson/start', requireAuth, lessonController.startLesson);
-router.get('/lesson/next', requireAuth, lessonController.getNextExercise);
-router.post('/lesson/answer', requireAuth, lessonController.submitAnswer);
-router.get('/lesson/summary', requireAuth, lessonController.getLessonSummary);
+router.post('/start', requireAuth, lessonController.startLesson);
+router.get('/next', requireAuth, lessonController.getNextExercise);
+router.post('/answer', requireAuth, lessonController.submitAnswer);
+router.get('/summary', requireAuth, lessonController.getLessonSummary);
 
 module.exports = router;
