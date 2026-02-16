@@ -2,7 +2,7 @@ const express = require('express');
 const config = require('./config/env');
 const errorHandler = require('./middlewares/errorHandler');
 
-const lessonRoutes = require('./routes/lessonRoutes');
+const lessonRoutes = require('./src/routes/lessonRoutes');
 const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const conceptRoutes = require('./routes/conceptRoutes');
