@@ -2,6 +2,7 @@ const express = require('express');
 const config = require('./config/env');
 const errorHandler = require('./middlewares/errorHandler');
 
+const lessonRoutes = require('./routes/lessonRoutes');
 const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const conceptRoutes = require('./routes/conceptRoutes');
@@ -22,6 +23,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.use('/lesson', lessonRoutes);
 app.use('/auth', authRoutes);
 app.use('/profile', profileRoutes);
 app.use('/concepts', conceptRoutes);
