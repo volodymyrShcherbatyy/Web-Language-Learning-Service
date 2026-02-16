@@ -49,9 +49,7 @@ const Onboarding = () => {
         setLearningLanguageId(learningId);
         setInterfaceLanguageId(interfaceId);
 
-        if (nativeId && learningId && interfaceId) {
-          navigate('/dashboard', { replace: true });
-        }
+        
       } catch (apiError) {
         if (mounted) {
           setGlobalError(apiError.message || t('profile_load_error'));
